@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 import random
@@ -54,6 +55,10 @@ def shorten_url(request: URLRequest):
         conn.commit()
     return {"short_code": code, "long_url": request.long_url}
 
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
 @app.get("/{code}")
 def redirect_url(code: str):
     with engine.connect() as conn:
@@ -63,4 +68,4 @@ def redirect_url(code: str):
         row = result.fetchone()
     if not row:
         raise HTTPException(status_code=404, detail="Code not found")
-    return {"long_url": row[0]}
+    return RedirectResponse(url=row[0], status_code=301)
