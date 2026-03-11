@@ -76,7 +76,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_443_from_internet" {
   cidr_ipv4         = "0.0.0.0/0"
 }
 
-resource "aws_vpc_security_group_egress_rule" "allow_aegress_alb" {
+resource "aws_vpc_security_group_egress_rule" "allow_egress_alb" {
   security_group_id = aws_security_group.sg_alb.id
   ip_protocol       = "-1"
   cidr_ipv4         = "0.0.0.0/0"

@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "db_credentials" {
-  name = "url-shortener-db-credentials-01"
+  name = "url-shortener-db-credentials-02"
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials" {
