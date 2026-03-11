@@ -4,6 +4,9 @@ A URL shortening REST API built with FastAPI, containerized with Docker,
 deployed on AWS ECS Fargate with RDS PostgreSQL.
 
 ## Architecture
+
+![Architecture](diagram/sprint3_infra.png)
+
 - FastAPI (Python) — REST API
 - Docker + ECR — containerization
 - ECS Fargate — container orchestration
