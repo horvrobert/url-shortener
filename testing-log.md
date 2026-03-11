@@ -65,7 +65,7 @@ Test: Secrets Manager Secret Retrieval
 Expected: ECS has access to Secrets Manager. Credentials are stored correctly and retrievable at runtime.
 Result: PASS
 
-**Steps:**
+Steps:
 
 ```bash
 aws secretsmanager get-secret-value \
@@ -73,11 +73,37 @@ aws secretsmanager get-secret-value \
   --region eu-central-1
 ```
 
-**Expected result:** JSON response containing `username` and `password` fields.
+Expected result: JSON response containing `username` and `password` fields.
 
-**Actual result:** ✅ Secret returned successfully. Used returned credentials to authenticate to RDS.
+Actual result: Secret returned successfully. Used returned credentials to authenticate to RDS.
 
 ```bash
 
     "SecretString": "{\"dbname\":\"urlshortnerdb01\",\"host\":\"url-shortener-db.c1e00qcsmzm4.eu-central-1.rds.amazonaws.com\",\"password\":\"xxxxxxxxx\",\"port\":5432,\"username\":\"xxxxxxxxxxx\"}",
 ```
+
+
+## Sprint 3 - ECS Fargate Deployment
+
+Test: ECS task running (amd64 image)
+Expected: task reaches RUNNING state, no crashes
+Result: PASS - image rebuilt for linux/amd64 platform, task stable
+
+Test: ALB target group health check
+Expected: target shows healthy in target group
+Result: PASS - confirmed in AWS console
+
+Test: ALB DNS reachability
+Input: GET /health via ALB DNS
+Expected: 200 response
+Result: PASS - returns {"status": "healthy"} after adding dedicated /health endpoint before /{code} catch-all route
+
+Test: POST /shorten via ALB
+Input: {"long_url": "https://google.com"}
+Expected: short code returned
+Result: PASS - returned code ZnhtwS
+
+Test: GET /{code} redirect via ALB
+Input: GET /ZnhtwS (curl -L)
+Expected: HTTP 301 redirect to https://google.com
+Result: PASS - curl -L followed redirect, Google homepage HTML returned confirming redirect working end to end

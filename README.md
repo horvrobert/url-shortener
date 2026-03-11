@@ -44,5 +44,29 @@ Provisioned via Terraform:
 - Security groups for ALB, ECS app, and RDS with least-privilege rules
 
 
+## Deployment (Sprint 3)
+
+Provisioned via Terraform:
+- ECS Fargate cluster and service running the containerized FastAPI app
+- ALB with HTTP listener, target group, and health checks
+- ECS tasks in private subnets — no public IP assigned
+- VPC endpoints for ECR (ecr.api, ecr.dkr), Secrets Manager, and S3 — allows private subnet tasks to reach AWS services without IGW
+- IAM task execution role with least-privilege policies for ECR pull and Secrets Manager access
+- Security groups using SG references (not CIDR blocks) for ECS-to-RDS and ALB-to-ECS traffic
+
+App is publicly reachable via ALB DNS. RDS remains in private subnet with no public access.
+
+### Test the live API
+```bash
+# Health check
+curl http://<alb-dns>/health
+
+# Shorten a URL
+curl -X POST http://<alb-dns>/shorten   -H "Content-Type: application/json"   -d '{"long_url": "https://example.com"}'
+
+# Follow the redirect
+curl -L http://<alb-dns>/<short-code>
+```
+
 ## Project Status
-🚧 In progress — Sprint 2 of 6
+🚧 In progress — Sprint 3 of 6 complete
