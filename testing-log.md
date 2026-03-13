@@ -107,3 +107,30 @@ Test: GET /{code} redirect via ALB
 Input: GET /ZnhtwS (curl -L)
 Expected: HTTP 301 redirect to https://google.com
 Result: PASS - curl -L followed redirect, Google homepage HTML returned confirming redirect working end to end
+
+## Sprint 4 - CI/CD Pipeline
+
+Test: GitHub Actions workflow triggers on push to main
+Expected: workflow starts automatically on push
+Result: PASS - Build and Deploy workflow triggered on commit
+
+Test: OIDC authentication to AWS
+Expected: GitHub Actions assumes url-shortener-github-actions-role via OIDC
+Result: PASS - no static credentials, short-lived token issued per run
+
+Test: Docker image build and push to ECR
+Expected: image built for linux/amd64, tagged with Git SHA, pushed to ECR
+Result: PASS - image tagged sha-${{ github.sha }} pushed successfully
+
+Test: ECS task definition updated with new image
+Expected: new task definition revision created with updated image URI
+Result: PASS - task definition updated automatically by pipeline
+
+Test: ECS service redeployed
+Expected: ECS service updated to use new task definition, service stable
+Result: PASS - pipeline waited for service stability, deployment confirmed
+
+Test: Health check after pipeline deployment
+Input: GET /health via ALB DNS
+Expected: {"status": "healthy"}
+Result: PASS - curl http://url-shortener-alb-1795196136.eu-central-1.elb.amazonaws.com/health returned {"status":"healthy"}
