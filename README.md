@@ -71,5 +71,17 @@ curl -X POST http://<alb-dns>/shorten   -H "Content-Type: application/json"   -d
 curl -L http://<alb-dns>/<short-code>
 ```
 
+## CI/CD Pipeline (Sprint 4)
+
+GitHub Actions workflow on push to main:
+- Builds Docker image for linux/amd64
+- Tags image with Git SHA — unique tag per commit, no manual versioning
+- Pushes image to ECR
+- Downloads current ECS task definition
+- Renders new task definition with updated image URI
+- Deploys to ECS and waits for service stability
+
+Authentication via OIDC — no static AWS credentials stored in GitHub secrets.
+
 ## Project Status
-🚧 In progress — Sprint 3 of 6 complete
+🚧 In progress — Sprint 4 of 6 complete
