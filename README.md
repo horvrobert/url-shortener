@@ -5,7 +5,7 @@ deployed on AWS ECS Fargate with RDS PostgreSQL.
 
 ## Architecture
 
-![Architecture](diagram/sprint3_infra.png)
+![Architecture](diagram/infra.png)
 
 - FastAPI (Python) — REST API
 - Docker + ECR — containerization
