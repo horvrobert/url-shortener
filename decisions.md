@@ -151,3 +151,48 @@ Trade-offs accepted:
 - Accepted the higher cost for portfolio correctness
 
 
+## Decision: OIDC over static AWS access keys for GitHub Actions authentication
+
+Why this exists:
+- GitHub Actions pipeline needs to authenticate to AWS to push images to ECR and deploy to ECS
+
+Alternatives considered:
+- Static AWS access keys (IAM user credentials stored as GitHub secrets)
+
+Why static access keys rejected:
+- Long-lived credentials that never expire — a leak means full AWS account exposure until manually rotated
+- Keys can appear in logs, error messages, or get accidentally committed
+- Rotation is a manual operational burden
+- AWS and GitHub both explicitly recommend against this pattern
+
+Why OIDC chosen:
+- No credentials stored anywhere — GitHub requests a short-lived token per workflow run
+- Token expires when the job finishes, nothing to leak
+- Trust is scoped to a specific repo via the StringLike condition on the sub claim
+- Production-correct approach used across the industry
+
+Trade-offs accepted:
+- Requires an IAM OIDC provider in AWS and a dedicated IAM role — more initial setup than pasting keys into GitHub secrets
+- OIDC provider is account-level, so subsequent projects reference it via a data source rather than creating it again
+
+
+## Decision: Git SHA image tags over semantic versioning for CI/CD
+
+Why this exists:
+- Pipeline needs to tag each Docker image uniquely on every push to main
+
+Alternatives considered:
+- Semantic versioning (v1.0.0, v1.0.1) — manual, requires someone to bump the version
+- :latest tag — always points to the most recent image, no traceability
+
+Why :latest rejected:
+- No traceability — you cannot tell which code version is running in ECS
+- ECS may not detect a change if the tag doesn't change, skipping deployment
+
+Why manual semantic versioning rejected:
+- Requires a human to bump the version on every merge — breaks the automation
+
+Why Git SHA chosen:
+- Every commit produces a unique tag automatically — no human input needed
+- Tag is traceable directly back to the exact commit in GitHub
+- Pipeline is fully automated end to end
