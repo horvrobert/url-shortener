@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - 'diagram/**'
 
 env:
   AWS_REGION: eu-central-1
