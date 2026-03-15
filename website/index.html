@@ -121,7 +121,10 @@
         const API_BASE = 'https://shrinkr.click';
 
         async function shortenUrl() {
-            const longUrl = document.getElementById('longUrl').value.trim();
+            let longUrl = document.getElementById('longUrl').value.trim();
+            if (longUrl && !longUrl.startsWith('http://') && !longUrl.startsWith('https://')) {
+                longUrl = 'https://' + longUrl;
+            }
             const btn = document.getElementById('shortenBtn');
             const result = document.getElementById('result');
             const errorMsg = document.getElementById('errorMsg');
