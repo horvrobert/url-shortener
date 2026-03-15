@@ -196,3 +196,28 @@ Why Git SHA chosen:
 - Every commit produces a unique tag automatically — no human input needed
 - Tag is traceable directly back to the exact commit in GitHub
 - Pipeline is fully automated end to end
+
+
+## Decision: S3 + CloudFront over Amplify for static frontend
+
+Why this exists:
+- Need to serve a static HTML frontend for the URL shortener
+
+Alternatives considered:
+- AWS Amplify
+
+Why Amplify rejected:
+- Amplify is a higher-level abstraction that manages hosting, CI/CD, and deployment automatically
+- Adds complexity and cost without adding value for a single static HTML file
+- Hides the underlying infrastructure — not useful for a portfolio project where the goal is demonstrating AWS knowledge
+
+Why S3 + CloudFront chosen:
+- Full control over the infrastructure — bucket, OAC, distribution, cache behaviour all explicitly configured in Terraform
+- CloudFront provides HTTPS via default certificate, global CDN, and direct integration with S3 via OAC
+- S3 bucket is fully private — no public access, only CloudFront can read objects via OAC bucket policy
+- Standard production pattern used across the industry for static site hosting
+
+Trade-offs accepted:
+- More setup than Amplify — requires S3 bucket, OAC, bucket policy, and CloudFront distribution configured separately
+- No built-in CI/CD for frontend deployments — uploading index.html is a manual step (acceptable for a single static file)
+- Amplify would be the better choice for a larger frontend with multiple pages, assets, and frequent deployments
