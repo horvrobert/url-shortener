@@ -1,0 +1,38 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'website/index.html'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::373270679710:role/url-shortener-github-actions-role
+          aws-region: eu-central-1
+
+      - name: Upload index.html to S3
+        run: |
+          aws s3 cp website/index.html s3://url-shortener-frontend-373270679710/index.html
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id $(aws cloudfront list-distributions \
+              --query "DistributionList.Items[?Origins.Items[0].DomainName=='url-shortener-frontend-373270679710.s3.eu-central-1.amazonaws.com'].Id" \
+              --output text) \
+            --paths "/index.html"
