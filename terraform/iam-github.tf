@@ -85,6 +85,14 @@ resource "aws_iam_role_policy" "github_actions" {
           aws_iam_role.ecs_task_execution_role.arn,
           aws_iam_role.ecs_task_role.arn
         ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "cloudfront:CreateInvalidation",
+          "cloudfront:ListDistributions"
+        ]
+        Resource = "*"
       }
     ]
   })
