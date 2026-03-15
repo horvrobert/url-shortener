@@ -4,8 +4,9 @@ resource "aws_security_group" "sg_rds" {
   vpc_id      = aws_vpc.url-shortener-vpc.id
 
   tags = {
-    Name    = "URL-shortener-RDS-SG"
-    Project = "URL-shortener"
+    Name      = "URL-shortener-RDS-SG"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -23,15 +24,15 @@ resource "aws_vpc_security_group_egress_rule" "allow_egress_rds" {
   cidr_ipv4         = "0.0.0.0/0"
 }
 
-
 resource "aws_security_group" "sg_app" {
   name        = "url-shortener-app-sg"
   description = "Security group for URL shortener"
   vpc_id      = aws_vpc.url-shortener-vpc.id
 
   tags = {
-    Name    = "URL-shortener-APP-SG"
-    Project = "URL-shortener"
+    Name      = "URL-shortener-APP-SG"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -55,8 +56,9 @@ resource "aws_security_group" "sg_alb" {
   vpc_id      = aws_vpc.url-shortener-vpc.id
 
   tags = {
-    Name    = "URL-shortener-ALB-SG"
-    Project = "URL-shortener"
+    Name      = "URL-shortener-ALB-SG"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 

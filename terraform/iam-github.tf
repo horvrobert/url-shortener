@@ -31,6 +31,12 @@ resource "aws_iam_role" "github_actions" {
       }
     ]
   })
+
+  tags = {
+    Name      = "GitHub-Actions-Role"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_iam_role_policy" "github_actions" {

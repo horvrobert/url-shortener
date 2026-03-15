@@ -8,6 +8,7 @@ resource "aws_ecr_repository" "app" {
 
   tags = {
     Name      = "URL-Shortener-App-Repository"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }

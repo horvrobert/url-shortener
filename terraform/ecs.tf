@@ -3,6 +3,7 @@ resource "aws_ecs_cluster" "url_shortener_cluster" {
 
   tags = {
     Name      = "URL-Shortener-Cluster"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }
@@ -44,6 +45,7 @@ resource "aws_ecs_task_definition" "url_shortener_task_definition" {
 
   tags = {
     Name      = "URL-Shortener-Task-Definition"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }
@@ -69,6 +71,7 @@ resource "aws_ecs_service" "url_shortener_service" {
 
   tags = {
     Name      = "URL-Shortener-Service"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 } 
@@ -80,6 +83,7 @@ resource "aws_cloudwatch_log_group" "url_shortener_logs" {
 
   tags = {
     Name      = "URL-Shortener-Logs"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }

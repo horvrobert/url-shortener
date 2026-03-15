@@ -43,6 +43,7 @@ resource "aws_cloudfront_distribution" "url_shortener_distribution" {
 
   tags = {
     Name      = "URL-Shortener-Distribution"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }

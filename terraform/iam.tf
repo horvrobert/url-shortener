@@ -17,7 +17,9 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   })
 
   tags = {
-    Name = "ecs-task-execution-role"
+    Name      = "ECS-Task-Execution-Role"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -26,12 +28,10 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy_attach
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-# Optional: Add explicit ECR permissions
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_ecr_policy" {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
-
 
 resource "aws_iam_role" "ecs_task_role" {
   name = "ecs-task-role"
@@ -50,10 +50,11 @@ resource "aws_iam_role" "ecs_task_role" {
   })
 
   tags = {
-    Name = "ecs-task-role"
+    Name      = "ECS-Task-Role"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
-
 
 resource "aws_iam_role_policy" "ecs_task_secrets_policy" {
   name = "ecs-task-secrets-policy"
@@ -82,7 +83,6 @@ resource "aws_iam_role_policy" "ecs_task_secrets_policy" {
   })
 }
 
-# Output the role ARNs for reference
 output "ecs_task_execution_role_arn" {
   value       = aws_iam_role.ecs_task_execution_role.arn
   description = "ARN of the ECS task execution role"

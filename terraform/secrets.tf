@@ -1,5 +1,11 @@
 resource "aws_secretsmanager_secret" "db_credentials" {
   name = "url-shortener-db-credentials-02"
+
+  tags = {
+    Name      = "URL-Shortener-DB-Credentials"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials" {

@@ -9,6 +9,7 @@ resource "aws_vpc_endpoint" "ecr_api_endpoint" {
 
   tags = {
     Name      = "URL-Shortener-ECR-API-Endpoint"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }
@@ -23,6 +24,7 @@ resource "aws_vpc_endpoint" "ecr_dkr_endpoint" {
 
   tags = {
     Name      = "URL-Shortener-ECR-DKR-Endpoint"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }
@@ -37,6 +39,7 @@ resource "aws_vpc_endpoint" "secretsmanager_endpoint" {
 
   tags = {
     Name      = "URL-Shortener-Secrets-Manager-Endpoint"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }
@@ -49,6 +52,7 @@ resource "aws_vpc_endpoint" "s3_endpoint" {
 
   tags = {
     Name      = "URL-Shortener-S3-Endpoint"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }
@@ -60,6 +64,7 @@ resource "aws_security_group" "sg_endpoints" {
 
   tags = {
     Name    = "URL-shortener-endpoints-SG"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }
@@ -73,6 +78,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_443_from_vpc" {
 
   tags = {
     Name      = "Allow-HTTPS-From-VPC"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }
@@ -84,6 +90,7 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_outbound" {
 
   tags = {
     Name      = "Allow-All-Outbound"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }
@@ -98,6 +105,7 @@ resource "aws_vpc_endpoint" "logs_endpoint" {
 
   tags = {
     Name      = "URL-Shortener-Logs-Endpoint"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }

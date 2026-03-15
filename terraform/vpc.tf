@@ -4,8 +4,9 @@ resource "aws_vpc" "url-shortener-vpc" {
   enable_dns_support   = true
 
   tags = {
-    Name    = "URL-shortener-VPC"
-    Project = "URL-shortener"
+    Name      = "URL-shortener-VPC"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -20,8 +21,9 @@ resource "aws_subnet" "public_1" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name    = "Public-1"
-    Project = "URL-shortener"
+    Name      = "Public-1"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -32,8 +34,9 @@ resource "aws_subnet" "public_2" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name    = "Public-2"
-    Project = "URL-shortener"
+    Name      = "Public-2"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -43,8 +46,9 @@ resource "aws_subnet" "private_1" {
   availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
-    Name    = "Private-1"
-    Project = "URL-shortener"
+    Name      = "Private-1"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -54,7 +58,8 @@ resource "aws_subnet" "private_2" {
   availability_zone = data.aws_availability_zones.available.names[1]
 
   tags = {
-    Name    = "Private-2"
-    Project = "URL-shortener"
+    Name      = "Private-2"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }

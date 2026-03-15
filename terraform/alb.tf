@@ -7,6 +7,7 @@ resource "aws_lb" "url_shortener_alb" {
 
   tags = {
     Name      = "URL-Shortener-ALB"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }
@@ -23,6 +24,7 @@ resource "aws_lb_listener" "http" {
   
   tags = {
     Name      = "URL-Shortener-HTTP-Listener"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }
@@ -41,6 +43,7 @@ resource "aws_lb_target_group" "url_shortener_tg" {
 
   tags = {
     Name      = "URL-Shortener-TG"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }

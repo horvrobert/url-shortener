@@ -2,8 +2,9 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.url-shortener-vpc.id
 
   tags = {
-    Name    = "URL-shortener-IGW"
-    Project = "URL-shortener"
+    Name      = "URL-shortener-IGW"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -16,8 +17,9 @@ resource "aws_route_table" "public_rt" {
   }
 
   tags = {
-    Name    = "URL-shortener-Public-RT"
-    Project = "URL-shortener"
+    Name      = "URL-shortener-Public-RT"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -35,8 +37,9 @@ resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.url-shortener-vpc.id
 
   tags = {
-    Name    = "URL-shortener-Private-RT"
-    Project = "URL-shortener"
+    Name      = "URL-shortener-Private-RT"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -49,4 +52,3 @@ resource "aws_route_table_association" "private_subnets" {
   subnet_id      = each.value
   route_table_id = aws_route_table.private_rt.id
 }
-

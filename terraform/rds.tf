@@ -16,8 +16,9 @@ resource "aws_db_instance" "url-shortener-db" {
   vpc_security_group_ids = [aws_security_group.sg_rds.id]
 
   tags = {
-    Name    = "URL-shortener-DB"
-    Project = "URL-shortener"
+    Name      = "URL-shortener-DB"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -27,7 +28,8 @@ resource "aws_db_subnet_group" "url-shortener-db-subnet-group" {
   subnet_ids  = [aws_subnet.private_1.id, aws_subnet.private_2.id]
 
   tags = {
-    Name    = "URL-shortener-DB-Subnet-Group"
-    Project = "URL-shortener"
+    Name      = "URL-shortener-DB-Subnet-Group"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }

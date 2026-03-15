@@ -3,6 +3,7 @@ resource "aws_s3_bucket" "url_shortener_bucket" {
 
   tags = {
     Name      = "URL-Shortener-Frontend"
+    Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
 }
