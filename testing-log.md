@@ -183,8 +183,18 @@ Result: PASS after fix - initial visit returned FastAPI 404, fixed by adding GET
 
 Test: POST /shorten via frontend at shrinkr.click
 Expected: short code returned and displayed in UI
-Result: PASS - frontend at CloudFront calls https://shrinkr.click/shorten, short code returned
+Result: FAIL - CORS preflight OPTIONS request to https://shrinkr.click/shorten returned 400
+Missing Access-Control-Allow-Origin header — FastAPI CORS middleware only allowed shrinkr.click
+but frontend is served from dmjud0bhi7eg8.cloudfront.net
 
-Test: GET /shrinkr.click/{code} redirect
+Test: CORS fix — add CloudFront domain to allow_origins
+Expected: preflight succeeds, POST /shorten returns short code
+Result: PASS - added dmjud0bhi7eg8.cloudfront.net to allow_origins in main.py
+
+Test: POST /shorten end to end
+Expected: short code returned and displayed in UI
+Result: PASS - frontend calls https://shrinkr.click/shorten, short code returned and displayed
+
+Test: GET shrinkr.click/{code} redirect
 Expected: short link redirects to original URL
 Result: PASS - 301 redirect working end to end on branded domain

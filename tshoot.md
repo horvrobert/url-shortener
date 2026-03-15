@@ -282,3 +282,67 @@ VERIFICATION
 - https://shrinkr.click/abc123 redirects to original URL
 - HTTP requests to shrinkr.click redirect to HTTPS automatically
 - ACM certificate valid, no browser TLS warnings
+
+================================================================================
+ISSUE: CORS preflight blocked — OPTIONS returns 400, missing Allow-Origin header
+================================================================================
+
+ERROR
+-----
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the
+remote resource at https://shrinkr.click/shorten.
+Reason: CORS header 'Access-Control-Allow-Origin' missing. Status code: 400.
+
+Network tab shows:
+- POST to shrinkr.click/shorten — 0 B transferred
+- OPTIONS to shrinkr.click/shorten — 400, CORS Missing Allow Origin
+
+
+ROOT CAUSE
+----------
+FastAPI CORS middleware was configured with:
+  allow_origins=["https://shrinkr.click"]
+
+But the frontend is served from https://dmjud0bhi7eg8.cloudfront.net.
+The browser sends the Origin header as the CloudFront domain, not shrinkr.click.
+FastAPI rejected the preflight because the origin didn't match.
+
+Note: this is separate from the mixed content issue. The request now reaches
+the server over HTTPS, but the CORS policy rejected it.
+
+
+STEPS TO FIX
+============
+
+STEP 1: Add CloudFront domain to allow_origins in main.py
+-----------------------------------------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://shrinkr.click",
+        "https://dmjud0bhi7eg8.cloudfront.net"
+    ],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
+
+STEP 2: Push to main — pipeline deploys automatically
+------------------------------------------------------
+git add main.py
+git commit -m "fix: add CloudFront domain to CORS allow_origins"
+git push origin main
+
+
+WHY BOTH ORIGINS ARE NEEDED
+-----------------------------
+shrinkr.click points to the ALB (API). The frontend is served from CloudFront.
+Until shrinkr.click is pointed to CloudFront for the frontend (with api.shrinkr.click
+for the API), both origins must be allowed. This is a known trade-off documented
+in decisions.md.
+
+
+VERIFICATION
+------------
+- OPTIONS preflight to https://shrinkr.click/shorten returns 200
+- POST /shorten returns {"short_code": "...", "long_url": "..."}
+- Short URL displayed in frontend UI
