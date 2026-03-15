@@ -78,7 +78,7 @@ def health_check():
 
 @app.get("/")
 def root():
-    return RedirectResponse(url="https://dmjud0bhi7eg8.cloudfront.net", status_code=302)
+    return RedirectResponse(url="https://www.shrinkr.click", status_code=302)
 
 @app.get("/{code}")
 def redirect_url(code: str):
