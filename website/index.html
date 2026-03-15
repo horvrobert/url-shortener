@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 560px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            font-size: 24px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        p.subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        input:focus {
+            border-color: #0070f3;
+        }
+        button {
+            padding: 12px 22px;
+            font-size: 15px;
+            background-color: #0070f3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #005ecb;
+        }
+        button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+        #result {
+            display: none;
+            background: #f6f8ff;
+            border: 1px solid #d0d9ff;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        #result p {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        #result a {
+            font-size: 15px;
+            color: #0070f3;
+            word-break: break-all;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        #result a:hover {
+            text-decoration: underline;
+        }
+        .error {
+            color: #d00;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>URL Shortener</h1>
+        <p class="subtitle">Paste a long URL and get a short link instantly.</p>
+        <div class="input-row">
+            <input type="url" id="longUrl" placeholder="https://example.com/very/long/url" />
+            <button id="shortenBtn" onclick="shortenUrl()">Shorten</button>
+        </div>
+        <div id="result">
+            <p>Your short URL:</p>
+            <a id="shortLink" href="#" target="_blank"></a>
+        </div>
+        <div class="error" id="errorMsg">Something went wrong. Please try again.</div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://shrinkr.click';
+
+        async function shortenUrl() {
+            const longUrl = document.getElementById('longUrl').value.trim();
+            const btn = document.getElementById('shortenBtn');
+            const result = document.getElementById('result');
+            const errorMsg = document.getElementById('errorMsg');
+            const shortLink = document.getElementById('shortLink');
+
+            result.style.display = 'none';
+            errorMsg.style.display = 'none';
+
+            if (!longUrl) {
+                alert('Please enter a URL');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Shortening...';
+
+            try {
+                const response = await fetch(`${API_BASE}/shorten`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ long_url: longUrl })
+                });
+
+                if (!response.ok) throw new Error('API error');
+
+                const data = await response.json();
+                const shortUrl = `${API_BASE}/${data.short_code}`;
+
+                shortLink.href = shortUrl;
+                shortLink.textContent = shortUrl;
+                result.style.display = 'block';
+            } catch (error) {
+                errorMsg.style.display = 'block';
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Shorten';
+            }
+        }
+
+        document.getElementById('longUrl').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') shortenUrl();
+        });
+    </script>
+</body>
+</html>
