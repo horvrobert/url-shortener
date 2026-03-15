@@ -8,7 +8,7 @@ resource "aws_cloudfront_origin_access_control" "url_shortener_oac" {
 resource "aws_cloudfront_distribution" "url_shortener_distribution" {
   enabled             = true
   default_root_object = "index.html"
-
+  aliases             = ["www.shrinkr.click"]
 
   origin {
     domain_name              = aws_s3_bucket.url_shortener_bucket.bucket_regional_domain_name
@@ -38,7 +38,9 @@ resource "aws_cloudfront_distribution" "url_shortener_distribution" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn      = aws_acm_certificate_validation.shrinkr.certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 
   tags = {
