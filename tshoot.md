@@ -346,3 +346,73 @@ VERIFICATION
 - OPTIONS preflight to https://shrinkr.click/shorten returns 200
 - POST /shorten returns {"short_code": "...", "long_url": "..."}
 - Short URL displayed in frontend UI
+
+================================================================================
+ISSUE: CloudFront rejects ACM certificate — InvalidViewerCertificate
+================================================================================
+
+ERROR
+-----
+Error: updating CloudFront Distribution (EX5Z7T6XDTE4T): operation error
+CloudFront: UpdateDistribution, https response error StatusCode: 400,
+InvalidViewerCertificate: The specified SSL certificate doesn't exist,
+isn't in us-east-1 region, isn't valid, or doesn't include a valid
+certificate chain.
+
+
+ROOT CAUSE
+----------
+CloudFront is a global service and only accepts ACM certificates from
+us-east-1 regardless of where your other infrastructure lives.
+The ACM certificate was created in eu-central-1 (same region as the ALB),
+which is correct for ALB but invalid for CloudFront.
+
+
+STEPS TO FIX
+============
+
+STEP 1: Add us-east-1 provider to main.tf
+------------------------------------------
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
+STEP 2: Add second ACM certificate in us-east-1 in dns.tf
+-----------------------------------------------------------
+resource "aws_acm_certificate" "shrinkr_us" {
+  provider                  = aws.us_east_1
+  domain_name               = "shrinkr.click"
+  subject_alternative_names = ["www.shrinkr.click"]
+  validation_method         = "DNS"
+  ...
+}
+
+resource "aws_acm_certificate_validation" "shrinkr_us" {
+  provider        = aws.us_east_1
+  certificate_arn = aws_acm_certificate.shrinkr_us.arn
+  validation_record_fqdns = [for record in aws_route53_record.shrinkr_cert_validation : record.fqdn]
+}
+
+STEP 3: Update cloudfront.tf to use us-east-1 certificate
+-----------------------------------------------------------
+viewer_certificate {
+  acm_certificate_arn      = aws_acm_certificate_validation.shrinkr_us.certificate_arn
+  ssl_support_method       = "sni-only"
+  minimum_protocol_version = "TLSv1.2_2021"
+}
+
+
+WHY TWO CERTIFICATES
+---------------------
+- eu-central-1 certificate — used by ALB HTTPS listener
+- us-east-1 certificate — used by CloudFront (mandatory requirement)
+Both cover the same domains (shrinkr.click, www.shrinkr.click) and use
+the same Route 53 DNS validation records.
+
+
+VERIFICATION
+------------
+- terraform apply completes without certificate errors
+- https://www.shrinkr.click loads frontend
+- CloudFront distribution shows custom SSL certificate in console
