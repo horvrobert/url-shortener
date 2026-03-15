@@ -2,6 +2,8 @@
 
 A production-grade URL shortening service built with FastAPI, containerized with Docker, deployed on AWS ECS Fargate with RDS PostgreSQL, served over HTTPS via a custom domain.
 
+> Infrastructure has been destroyed to avoid ongoing costs. All code, documentation, and architecture diagrams are preserved in this repository.
+
 ## Architecture
 
 ![Architecture](diagram/infra_complete.png)
@@ -58,7 +60,7 @@ Provisioned via Terraform:
 - IAM task execution role and task role with least-privilege policies
 - Security groups using SG references (not CIDR blocks)
 
-### Test the live API
+### API endpoints
 ```bash
 # Health check
 curl https://shrinkr.click/health
@@ -90,6 +92,8 @@ Authentication via OIDC — no static AWS credentials stored in GitHub secrets.
 
 ## Frontend + Custom Domain (Sprint 5)
 
+![shrinkr.click](diagram/shrinkr_website.png)
+
 - Static HTML frontend served from S3 via CloudFront at `https://www.shrinkr.click`
 - Custom domain `shrinkr.click` registered in Route 53
 - ACM certificates — eu-central-1 for ALB, us-east-1 for CloudFront (AWS requirement)
@@ -98,4 +102,4 @@ Authentication via OIDC — no static AWS credentials stored in GitHub secrets.
 - URL deduplication — same URL always returns the same short code
 
 ## Project Status
-✅ Complete — Sprint 5 of 5
+✅ Complete — infrastructure destroyed, codebase preserved
