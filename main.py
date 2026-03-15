@@ -58,8 +58,17 @@ def generate_code():
 
 @app.post("/shorten")
 def shorten_url(request: URLRequest):
-    code = generate_code()
     with engine.connect() as conn:
+        # Return existing code if URL already exists
+        result = conn.execute(text(
+            "SELECT short_code FROM urls WHERE long_url = :url"
+        ), {"url": request.long_url})
+        row = result.fetchone()
+        if row:
+            return {"short_code": row[0], "long_url": request.long_url}
+
+        # Generate new code if URL not seen before
+        code = generate_code()
         conn.execute(text(
             "INSERT INTO urls (short_code, long_url) VALUES (:code, :url)"
         ), {"code": code, "url": request.long_url})
