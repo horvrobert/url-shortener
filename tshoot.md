@@ -208,3 +208,77 @@ curl -X POST http://<alb-dns>/shorten -H "Content-Type: application/json" \
 
 curl -L http://<alb-dns>/<short-code>
   -> follows 301, returns destination page
+
+
+================================================================================
+ISSUE: Frontend fails with mixed content block — HTTPS page calling HTTP API
+================================================================================
+
+ERROR
+-----
+Browser blocks POST request from https://dmjud0bhi7eg8.cloudfront.net to
+http://url-shortener-alb-206207805.eu-central-1.elb.amazonaws.com/shorten
+
+Network tab shows: Mixed Block, 0 B transferred, Finish: 0 ms
+
+
+ROOT CAUSE
+----------
+CloudFront serves the frontend over HTTPS. Browsers enforce mixed content
+policy — HTTPS pages cannot make requests to HTTP endpoints. The ALB only
+has an HTTP :80 listener with no TLS certificate, so the API is only
+reachable over HTTP.
+
+This is separate from CORS. CORS middleware was added to FastAPI but the
+request never reaches the server — the browser blocks it before sending.
+
+
+SOLUTION
+--------
+Add HTTPS to the ALB:
+1. Register a custom domain in Route 53
+2. Request an ACM certificate for the domain
+3. Add HTTPS :443 listener to the ALB using the ACM certificate
+4. Update index.html API_BASE to use the custom domain over HTTPS
+5. Update FastAPI CORS allow_origins to the custom domain
+
+STEPS TO FIX
+============
+
+STEP 1: Register domain in Route 53
+-------------------------------------
+Registered shrinkr.click via Route 53 (~$3/year .click TLD)
+
+STEP 2: Add dns.tf
+--------------------
+- Route 53 hosted zone data source for shrinkr.click
+- ACM certificate with DNS validation for shrinkr.click
+- Route 53 A record aliased to ALB
+
+STEP 3: Update alb.tf
+-----------------------
+- HTTP listener changed from forward to HTTP 301 redirect to HTTPS
+- New HTTPS :443 listener using ACM certificate ARN
+- TLS policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+
+STEP 4: Update main.py CORS origin
+------------------------------------
+allow_origins changed from CloudFront domain to https://shrinkr.click
+
+STEP 5: Update index.html API_BASE
+------------------------------------
+const API_BASE = 'https://shrinkr.click'
+
+STEP 6: Add root redirect in main.py
+--------------------------------------
+GET / returns RedirectResponse to CloudFront frontend
+Required because shrinkr.click DNS points to ALB — visiting root in browser
+returned FastAPI 404 without a dedicated root route
+
+
+VERIFICATION
+------------
+- https://shrinkr.click redirects to CloudFront frontend
+- https://shrinkr.click/abc123 redirects to original URL
+- HTTP requests to shrinkr.click redirect to HTTPS automatically
+- ACM certificate valid, no browser TLS warnings

@@ -60,7 +60,6 @@ Test: RDS provisioned in private subnet
 Expected: RDS instance running, not publicly accessible, attached to private subnets
 Result: PASS - confirmed in AWS console, publicly_accessible = false
 
-
 Test: Secrets Manager Secret Retrieval
 Expected: ECS has access to Secrets Manager. Credentials are stored correctly and retrievable at runtime.
 Result: PASS
@@ -78,7 +77,6 @@ Expected result: JSON response containing `username` and `password` fields.
 Actual result: Secret returned successfully. Used returned credentials to authenticate to RDS.
 
 ```bash
-
     "SecretString": "{\"dbname\":\"urlshortnerdb01\",\"host\":\"url-shortener-db.c1e00qcsmzm4.eu-central-1.rds.amazonaws.com\",\"password\":\"xxxxxxxxx\",\"port\":5432,\"username\":\"xxxxxxxxxxx\"}",
 ```
 
@@ -108,6 +106,7 @@ Input: GET /ZnhtwS (curl -L)
 Expected: HTTP 301 redirect to https://google.com
 Result: PASS - curl -L followed redirect, Google homepage HTML returned confirming redirect working end to end
 
+
 ## Sprint 4 - CI/CD Pipeline
 
 Test: GitHub Actions workflow triggers on push to main
@@ -134,3 +133,58 @@ Test: Health check after pipeline deployment
 Input: GET /health via ALB DNS
 Expected: {"status": "healthy"}
 Result: PASS - curl http://url-shortener-alb-1795196136.eu-central-1.elb.amazonaws.com/health returned {"status":"healthy"}
+
+
+## Sprint 5 - S3 + CloudFront Frontend
+
+Test: S3 bucket created with public access blocked
+Expected: bucket exists, all public access settings blocked, only CloudFront OAC can read
+Result: PASS - confirmed in AWS console
+
+Test: CloudFront distribution deployed
+Expected: distribution enabled, default root object index.html, HTTPS redirect active
+Result: PASS - distribution domain dmjud0bhi7eg8.cloudfront.net accessible
+
+Test: index.html served via CloudFront
+Expected: URL Shortener UI loads over HTTPS
+Result: PASS - frontend loads at https://dmjud0bhi7eg8.cloudfront.net
+
+Test: POST /shorten via frontend
+Expected: short code returned and displayed
+Result: FAIL - mixed content block — CloudFront serves HTTPS but API call targets ALB over HTTP
+Browser blocks HTTP requests from HTTPS pages
+
+Test: CORS fix deployed
+Expected: FastAPI accepts requests from CloudFront origin
+Result: PASS - CORSMiddleware added with allow_origins set to CloudFront domain
+
+Test: Mixed content fix
+Expected: frontend calls ALB over HTTPS
+Result: BLOCKED - ALB only has HTTP listener, no ACM certificate configured
+Resolution: requires custom domain + ACM certificate + HTTPS ALB listener (in progress)
+
+## Sprint 5 - Custom Domain + HTTPS (continued)
+
+Test: ACM certificate issued and validated
+Expected: certificate status Active, DNS validation records created in Route 53
+Result: PASS - certificate validated automatically via Route 53 DNS validation
+
+Test: HTTPS listener on ALB
+Expected: ALB accepts HTTPS :443 traffic, forwards to ECS target group
+Result: PASS - shrinkr.click reachable over HTTPS
+
+Test: HTTP to HTTPS redirect
+Expected: HTTP requests to shrinkr.click redirect to HTTPS with 301
+Result: PASS - browser follows redirect automatically
+
+Test: shrinkr.click root path
+Expected: visiting shrinkr.click redirects to CloudFront frontend
+Result: PASS after fix - initial visit returned FastAPI 404, fixed by adding GET / root redirect in main.py
+
+Test: POST /shorten via frontend at shrinkr.click
+Expected: short code returned and displayed in UI
+Result: PASS - frontend at CloudFront calls https://shrinkr.click/shorten, short code returned
+
+Test: GET /shrinkr.click/{code} redirect
+Expected: short link redirects to original URL
+Result: PASS - 301 redirect working end to end on branded domain
