@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 import random
@@ -9,6 +10,13 @@ import boto3
 import json
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://dmjud0bhi7eg8.cloudfront.net"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
 
 def get_db_url():
     secret_arn = os.getenv("DB_SECRET_ARN")
