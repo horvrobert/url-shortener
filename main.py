@@ -13,10 +13,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://shrinkr.click",
-        "https://dmjud0bhi7eg8.cloudfront.net"
-    ],
+    allow_origins=["https://www.shrinkr.click"],
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
