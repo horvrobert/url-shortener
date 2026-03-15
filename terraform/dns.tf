@@ -1,4 +1,3 @@
-
 data "aws_route53_zone" "shrinkr" {
   name         = "shrinkr.click"
   private_zone = false
@@ -53,7 +52,20 @@ resource "aws_route53_record" "shrinkr_alb" {
   }
 }
 
+resource "aws_route53_record" "www" {
+  zone_id = data.aws_route53_zone.shrinkr.zone_id
+  name    = "www.shrinkr.click"
+  type    = "CNAME"
+  ttl     = 300
+  records = [aws_cloudfront_distribution.url_shortener_distribution.domain_name]
+}
+
 output "domain_name" {
   value       = "https://shrinkr.click"
-  description = "Production URL"
+  description = "API and short links URL"
+}
+
+output "frontend_url" {
+  value       = "https://www.shrinkr.click"
+  description = "Frontend URL"
 }
