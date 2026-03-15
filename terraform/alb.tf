@@ -4,6 +4,11 @@ resource "aws_lb" "url_shortener_alb" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg_alb.id]
   subnets            = [aws_subnet.public_1.id, aws_subnet.public_2.id]
+
+  tags = {
+    Name      = "URL-Shortener-ALB"
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_lb_listener" "http" {
@@ -14,6 +19,11 @@ resource "aws_lb_listener" "http" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.url_shortener_tg.arn
+  }
+  
+  tags = {
+    Name      = "URL-Shortener-HTTP-Listener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -27,6 +37,11 @@ resource "aws_lb_target_group" "url_shortener_tg" {
   health_check {
     path = "/health"
     port = 8000
+  }
+
+  tags = {
+    Name      = "URL-Shortener-TG"
+    ManagedBy = "Terraform"
   }
 }
 
