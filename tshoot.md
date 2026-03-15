@@ -416,3 +416,148 @@ VERIFICATION
 - terraform apply completes without certificate errors
 - https://www.shrinkr.click loads frontend
 - CloudFront distribution shows custom SSL certificate in console
+
+================================================================================
+ISSUE: GitHub Actions pipeline fails — AccessDenied on s3:PutObject
+================================================================================
+
+ERROR
+-----
+upload failed: website/index.html to s3://url-shortener-frontend-373270679710/index.html
+An error occurred (AccessDenied) when calling the PutObject operation:
+User: arn:aws:sts::373270679710:assumed-role/url-shortener-github-actions-role/GitHubActions
+is not authorized to perform: s3:PutObject on resource:
+"arn:aws:s3:::url-shortener-frontend-373270679710/index.html"
+because no identity-based policy allows the s3:PutObject action
+
+
+ROOT CAUSE
+----------
+The GitHub Actions IAM role (iam-github.tf) had no S3 permissions.
+The role was scoped to ECR, ECS, IAM PassRole, and CloudFront only.
+S3 permissions were never added when the frontend deploy pipeline was introduced in Sprint 5.
+OIDC auth succeeded and CloudFront invalidation was allowed, but the S3 upload step
+failed immediately with AccessDenied.
+
+
+STEPS TO FIX
+============
+
+STEP 1: Add S3 statement to aws_iam_role_policy.github_actions in iam-github.tf
+---------------------------------------------------------------------------------
+{
+  Effect = "Allow"
+  Action = [
+    "s3:PutObject",
+    "s3:DeleteObject",
+    "s3:GetObject",
+    "s3:ListBucket"
+  ]
+  Resource = [
+    "arn:aws:s3:::url-shortener-frontend-373270679710",
+    "arn:aws:s3:::url-shortener-frontend-373270679710/*"
+  ]
+}
+
+STEP 2: Apply Terraform
+------------------------
+cd terraform
+terraform apply
+
+STEP 3: Re-run the failed pipeline
+------------------------------------
+Re-run deploy-frontend job from GitHub Actions UI — no new push required.
+
+
+VERIFICATION
+------------
+- deploy-frontend job completes green
+- index.html visible in S3 bucket
+- www.shrinkr.click loads updated frontend
+
+
+================================================================================
+ISSUE: CORS preflight blocked after www.shrinkr.click domain goes live
+================================================================================
+
+ERROR
+-----
+CORS Missing Allow Origin — OPTIONS to https://shrinkr.click/shorten returns 400.
+"Something went wrong. Please try again." displayed in frontend UI.
+
+
+ROOT CAUSE
+----------
+allow_origins in main.py was updated multiple times across sprints as the frontend
+domain changed (CloudFront raw domain → shrinkr.click → www.shrinkr.click).
+Each time the origin list was updated it missed one of the valid origins,
+causing the browser to reject the preflight.
+
+Root architectural cause: the frontend (CloudFront/www.shrinkr.click) and the API
+(ALB/shrinkr.click) are on different origins. Every browser request triggers a CORS
+preflight. Any mismatch between allow_origins and the actual request Origin header
+causes a silent 400 with no useful error message.
+
+
+STEPS TO FIX
+============
+
+Final fix — allow all origins in main.py:
+------------------------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
+
+Rationale: portfolio project with no authentication, no sensitive user data,
+and a Monday destroy date. Restrictive CORS serves no security purpose here.
+In production with auth tokens, allow_origins should be locked to specific domains.
+
+
+VERIFICATION
+------------
+- OPTIONS preflight returns 200
+- POST /shorten returns short code
+- Short URL displayed in frontend UI
+
+
+================================================================================
+ISSUE: Frontend accepts bare hostnames — short code resolves to 404
+================================================================================
+
+ERROR
+-----
+User enters "www.google.com" (no protocol).
+Frontend sends POST /shorten with long_url: "www.google.com".
+Short code created successfully.
+Clicking the short link navigates to shrinkr.click/www.google.com — treated as
+a relative path, not a URL. FastAPI returns 404 "Code not found".
+
+
+ROOT CAUSE
+----------
+index.html input is type="url" which hints to the browser but does not enforce
+protocol prefix. The JS read the value as-is and sent it to the API.
+The API accepted the bare hostname as a valid string — no URL validation in FastAPI.
+On redirect, the browser treated "www.google.com" as a relative path.
+
+
+STEPS TO FIX
+============
+
+Add protocol prepend in index.html shortenUrl() function:
+----------------------------------------------------------
+let longUrl = document.getElementById('longUrl').value.trim();
+if (longUrl && !longUrl.startsWith('http://') && !longUrl.startsWith('https://')) {
+    longUrl = 'https://' + longUrl;
+}
+
+Deploy via CI/CD pipeline — push to main triggers S3 upload automatically.
+
+
+VERIFICATION
+------------
+- Enter "www.google.com" in frontend — short link created
+- Click short link — redirects to https://www.google.com correctly

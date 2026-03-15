@@ -204,3 +204,35 @@ Result: PASS - 301 redirect working end to end on branded domain
 Test: POST /shorten same URL twice
 Expected: same short code returned both times
 Result: PASS - deduplication check added to shorten_url, existing code returned on duplicate
+
+## Sprint 5 - Post-Launch Fixes
+
+Test: GitHub Actions deploy-frontend pipeline
+Expected: index.html uploaded to S3, CloudFront cache invalidated
+Result: FAIL - AccessDenied on s3:PutObject — GitHub Actions IAM role missing S3 permissions
+Fix: added s3:PutObject, s3:DeleteObject, s3:GetObject, s3:ListBucket to iam-github.tf, terraform apply
+
+Test: deploy-frontend pipeline after IAM fix
+Expected: index.html uploaded to S3 successfully
+Result: PASS - pipeline green after terraform apply updated the role
+
+Test: POST /shorten via frontend — CORS after www.shrinkr.click goes live
+Expected: short code returned and displayed
+Result: FAIL - OPTIONS preflight blocked, CORS Missing Allow Origin
+Fix: allow_origins changed to ["*"] in main.py — persistent fix, no further CORS issues
+
+Test: POST /shorten with bare hostname input (no protocol)
+Input: "www.google.com" (no https://)
+Expected: short link created, redirect works
+Result: FAIL - short code created but redirect treated bare hostname as relative path, 404
+Fix: added https:// prepend in index.html if protocol missing
+
+Test: POST /shorten with bare hostname after fix
+Input: "www.google.com"
+Expected: short link redirects to https://www.google.com
+Result: PASS - protocol prepended automatically, redirect works correctly
+
+Test: Full end-to-end — shorten and redirect
+Input: https://www.google.com via frontend at www.shrinkr.click
+Expected: short code displayed, clicking link redirects to Google
+Result: PASS - working end to end on live domain
