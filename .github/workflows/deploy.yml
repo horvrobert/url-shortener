@@ -1,12 +1,13 @@
-name: Build and Deploy
+name: Deploy App
 
 on:
   push:
     branches:
       - main
-    paths-ignore:
-      - '**.md'
-      - 'diagram/**'
+    paths:
+      - 'main.py'
+      - 'Dockerfile'
+      - 'requirements.txt'
 
 env:
   AWS_REGION: eu-central-1
