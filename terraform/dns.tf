@@ -3,6 +3,7 @@ data "aws_route53_zone" "shrinkr" {
   private_zone = false
 }
 
+# Certificate in eu-central-1 — used by ALB
 resource "aws_acm_certificate" "shrinkr" {
   domain_name               = "shrinkr.click"
   subject_alternative_names = ["www.shrinkr.click"]
@@ -10,6 +11,24 @@ resource "aws_acm_certificate" "shrinkr" {
 
   tags = {
     Name      = "shrinkr.click"
+    Project   = "URL-shortener"
+    ManagedBy = "Terraform"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Certificate in us-east-1 — required by CloudFront
+resource "aws_acm_certificate" "shrinkr_us" {
+  provider                  = aws.us_east_1
+  domain_name               = "shrinkr.click"
+  subject_alternative_names = ["www.shrinkr.click"]
+  validation_method         = "DNS"
+
+  tags = {
+    Name      = "shrinkr.click-us-east-1"
     Project   = "URL-shortener"
     ManagedBy = "Terraform"
   }
@@ -37,6 +56,12 @@ resource "aws_route53_record" "shrinkr_cert_validation" {
 
 resource "aws_acm_certificate_validation" "shrinkr" {
   certificate_arn         = aws_acm_certificate.shrinkr.arn
+  validation_record_fqdns = [for record in aws_route53_record.shrinkr_cert_validation : record.fqdn]
+}
+
+resource "aws_acm_certificate_validation" "shrinkr_us" {
+  provider        = aws.us_east_1
+  certificate_arn = aws_acm_certificate.shrinkr_us.arn
   validation_record_fqdns = [for record in aws_route53_record.shrinkr_cert_validation : record.fqdn]
 }
 
