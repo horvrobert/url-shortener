@@ -1,20 +1,22 @@
 # URL Shortener
 
-A URL shortening REST API built with FastAPI, containerized with Docker, 
-deployed on AWS ECS Fargate with RDS PostgreSQL.
+A production-grade URL shortening service built with FastAPI, containerized with Docker, deployed on AWS ECS Fargate with RDS PostgreSQL, served over HTTPS via a custom domain.
 
 ## Architecture
 
-![Architecture](diagram/infra.png)
+![Architecture](diagram/infra_complete.png)
 
 - FastAPI (Python) — REST API
 - Docker + ECR — containerization
-- ECS Fargate — container orchestration
+- ECS Fargate — container orchestration (private subnets)
 - RDS PostgreSQL — database (private subnet)
 - Secrets Manager — credential management
-- ALB — load balancing
+- ALB — load balancing with HTTPS termination
+- CloudFront + S3 — static frontend with CDN
+- Route 53 + ACM — custom domain with TLS certificates
+- VPC Endpoints — private AWS service connectivity (no IGW)
 - Terraform — infrastructure as code
-- GitHub Actions — CI/CD pipeline
+- GitHub Actions + OIDC — CI/CD pipeline
 
 ## Local Development (Sprint 1)
 
@@ -46,42 +48,54 @@ Provisioned via Terraform:
 - Secrets Manager storing database credentials as JSON
 - Security groups for ALB, ECS app, and RDS with least-privilege rules
 
-
 ## Deployment (Sprint 3)
 
 Provisioned via Terraform:
 - ECS Fargate cluster and service running the containerized FastAPI app
-- ALB with HTTP listener, target group, and health checks
+- ALB with HTTPS listener, target group, and health checks
 - ECS tasks in private subnets — no public IP assigned
-- VPC endpoints for ECR (ecr.api, ecr.dkr), Secrets Manager, and S3 — allows private subnet tasks to reach AWS services without IGW
-- IAM task execution role with least-privilege policies for ECR pull and Secrets Manager access
-- Security groups using SG references (not CIDR blocks) for ECS-to-RDS and ALB-to-ECS traffic
-
-App is publicly reachable via ALB DNS. RDS remains in private subnet with no public access.
+- VPC endpoints for ECR (ecr.api, ecr.dkr), Secrets Manager, CloudWatch Logs, and S3
+- IAM task execution role and task role with least-privilege policies
+- Security groups using SG references (not CIDR blocks)
 
 ### Test the live API
 ```bash
 # Health check
-curl http://<alb-dns>/health
+curl https://shrinkr.click/health
 
 # Shorten a URL
-curl -X POST http://<alb-dns>/shorten   -H "Content-Type: application/json"   -d '{"long_url": "https://example.com"}'
+curl -X POST https://shrinkr.click/shorten \
+  -H "Content-Type: application/json" \
+  -d '{"long_url": "https://example.com"}'
 
 # Follow the redirect
-curl -L http://<alb-dns>/<short-code>
+curl -L https://shrinkr.click/<short-code>
 ```
 
 ## CI/CD Pipeline (Sprint 4)
 
-GitHub Actions workflow on push to main:
-- Builds Docker image for linux/amd64
-- Tags image with Git SHA — unique tag per commit, no manual versioning
-- Pushes image to ECR
-- Downloads current ECS task definition
-- Renders new task definition with updated image URI
-- Deploys to ECS and waits for service stability
+Two GitHub Actions workflows:
+
+**deploy.yml** — triggers on changes to `main.py`, `Dockerfile`, `requirements.txt`:
+- Builds Docker image for linux/amd64, tagged with Git SHA
+- Pushes to ECR
+- Updates ECS task definition and deploys to Fargate
+- Waits for service stability before marking green
+
+**deploy-frontend.yml** — triggers on changes to `website/index.html`:
+- Uploads to S3
+- Invalidates CloudFront cache
 
 Authentication via OIDC — no static AWS credentials stored in GitHub secrets.
 
+## Frontend + Custom Domain (Sprint 5)
+
+- Static HTML frontend served from S3 via CloudFront at `https://www.shrinkr.click`
+- Custom domain `shrinkr.click` registered in Route 53
+- ACM certificates — eu-central-1 for ALB, us-east-1 for CloudFront (AWS requirement)
+- HTTP redirects to HTTPS automatically
+- Route 53 DNS split: `shrinkr.click` → ALB, `www.shrinkr.click` → CloudFront
+- URL deduplication — same URL always returns the same short code
+
 ## Project Status
-🚧 In progress — Sprint 4 of 6 complete
+✅ Complete — Sprint 5 of 5
