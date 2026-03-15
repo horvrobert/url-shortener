@@ -221,3 +221,54 @@ Trade-offs accepted:
 - More setup than Amplify — requires S3 bucket, OAC, bucket policy, and CloudFront distribution configured separately
 - No built-in CI/CD for frontend deployments — uploading index.html is a manual step (acceptable for a single static file)
 - Amplify would be the better choice for a larger frontend with multiple pages, assets, and frequent deployments
+
+## Decision: Custom domain + ACM certificate over HTTP-only ALB
+
+Why this exists:
+- CloudFront serves the frontend over HTTPS — browsers block HTTP API calls from HTTPS pages (mixed content policy)
+- ALB had only an HTTP :80 listener, making the API unreachable from the frontend
+
+Alternatives considered:
+- Keep HTTP-only ALB and serve frontend over HTTP
+- Use CloudFront as a proxy in front of the ALB
+
+Why HTTP-only rejected:
+- CloudFront enforces HTTPS by default — serving the frontend over plain HTTP is not production-correct
+- Radik Fatkhelbaianov (SRE) publicly flagged the missing TLS as a gap during LinkedIn post review
+
+Why CloudFront proxy rejected:
+- Adds unnecessary complexity — CloudFront would need a second origin pointing to the ALB
+- Does not solve the underlying problem of the ALB having no TLS certificate
+
+Why custom domain + ACM chosen:
+- ACM issues a free TLS certificate for the custom domain
+- ALB HTTPS :443 listener terminates TLS at the load balancer — standard production pattern
+- Custom domain makes the short URLs meaningful (e.g. shrinkr.click/abc123 instead of ALB DNS)
+- Closes the architectural gap identified during LinkedIn review
+
+Trade-offs accepted:
+- Domain registration cost ~$3/year for .click TLD
+- Requires Route 53 hosted zone and DNS validation for ACM certificate
+- Additional Terraform resources: ACM certificate, Route 53 records, ALB HTTPS listener
+
+## Decision: URL deduplication in shorten endpoint
+
+Why this exists:
+- Multiple users shortening the same URL would generate different short codes
+- Wastes database space and creates inconsistent experience
+
+Alternatives considered:
+- No deduplication — always generate a new code
+
+Why no deduplication rejected:
+- Same URL stored multiple times with different codes — redundant data
+- If user shortens the same URL twice, they get different links — confusing
+
+Why deduplication chosen:
+- Check if long_url already exists before inserting
+- Return existing short_code if found — same URL always gets same short link
+- Single SELECT before INSERT — negligible performance cost
+
+Trade-offs accepted:
+- Two users shortening the same URL get the same short link — no per-user isolation
+- For a portfolio URL shortener this is acceptable — production systems might want per-user codes

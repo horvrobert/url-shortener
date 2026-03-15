@@ -198,3 +198,9 @@ Result: PASS - frontend calls https://shrinkr.click/shorten, short code returned
 Test: GET shrinkr.click/{code} redirect
 Expected: short link redirects to original URL
 Result: PASS - 301 redirect working end to end on branded domain
+
+## Sprint 5 - URL Deduplication
+
+Test: POST /shorten same URL twice
+Expected: same short code returned both times
+Result: PASS - deduplication check added to shorten_url, existing code returned on duplicate
