@@ -5,6 +5,11 @@ resource "aws_ecr_repository" "app" {
   image_scanning_configuration {
     scan_on_push = true
   }
+
+  tags = {
+    Name      = "URL-Shortener-App-Repository"
+    ManagedBy = "Terraform"
+  }
 }
 
 output "ecr_repository_url" {

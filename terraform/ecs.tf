@@ -1,5 +1,10 @@
 resource "aws_ecs_cluster" "url_shortener_cluster" {
   name = "url-shortener-cluster"
+
+  tags = {
+    Name      = "URL-Shortener-Cluster"
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_ecs_task_definition" "url_shortener_task_definition" {
@@ -36,6 +41,11 @@ resource "aws_ecs_task_definition" "url_shortener_task_definition" {
       }
     }
   ])
+
+  tags = {
+    Name      = "URL-Shortener-Task-Definition"
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_ecs_service" "url_shortener_service" {
@@ -56,10 +66,20 @@ resource "aws_ecs_service" "url_shortener_service" {
     container_name   = "url-shortener"
     container_port   = 8000
   }
-}
+
+  tags = {
+    Name      = "URL-Shortener-Service"
+    ManagedBy = "Terraform"
+  }
+} 
 
 
 resource "aws_cloudwatch_log_group" "url_shortener_logs" {
   name              = "/ecs/url-shortener"
   retention_in_days = 7
+
+  tags = {
+    Name      = "URL-Shortener-Logs"
+    ManagedBy = "Terraform"
+  }
 }

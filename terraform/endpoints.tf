@@ -7,6 +7,10 @@ resource "aws_vpc_endpoint" "ecr_api_endpoint" {
   security_group_ids  = [aws_security_group.sg_endpoints.id]
   private_dns_enabled = true
 
+  tags = {
+    Name      = "URL-Shortener-ECR-API-Endpoint"
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_vpc_endpoint" "ecr_dkr_endpoint" {
@@ -16,6 +20,11 @@ resource "aws_vpc_endpoint" "ecr_dkr_endpoint" {
   subnet_ids          = [aws_subnet.private_1.id, aws_subnet.private_2.id]
   security_group_ids  = [aws_security_group.sg_endpoints.id]
   private_dns_enabled = true
+
+  tags = {
+    Name      = "URL-Shortener-ECR-DKR-Endpoint"
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_vpc_endpoint" "secretsmanager_endpoint" {
@@ -25,6 +34,11 @@ resource "aws_vpc_endpoint" "secretsmanager_endpoint" {
   subnet_ids          = [aws_subnet.private_1.id, aws_subnet.private_2.id]
   security_group_ids  = [aws_security_group.sg_endpoints.id]
   private_dns_enabled = true
+
+  tags = {
+    Name      = "URL-Shortener-Secrets-Manager-Endpoint"
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_vpc_endpoint" "s3_endpoint" {
@@ -32,6 +46,11 @@ resource "aws_vpc_endpoint" "s3_endpoint" {
   service_name      = "com.amazonaws.eu-central-1.s3"
   vpc_endpoint_type = "Gateway"
   route_table_ids   = [aws_route_table.private_rt.id]
+
+  tags = {
+    Name      = "URL-Shortener-S3-Endpoint"
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_security_group" "sg_endpoints" {
@@ -41,7 +60,7 @@ resource "aws_security_group" "sg_endpoints" {
 
   tags = {
     Name    = "URL-shortener-endpoints-SG"
-    Project = "URL-shortener"
+    ManagedBy = "Terraform"
   }
 }
 
@@ -51,12 +70,22 @@ resource "aws_vpc_security_group_ingress_rule" "allow_443_from_vpc" {
   from_port         = 443
   to_port           = 443
   cidr_ipv4         = "192.168.0.0/16"
+
+  tags = {
+    Name      = "Allow-HTTPS-From-VPC"
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_vpc_security_group_egress_rule" "allow_all_outbound" {
   security_group_id = aws_security_group.sg_endpoints.id
   ip_protocol       = "-1"
   cidr_ipv4         = "0.0.0.0/0"
+
+  tags = {
+    Name      = "Allow-All-Outbound"
+    ManagedBy = "Terraform"
+  }
 }
 
 resource "aws_vpc_endpoint" "logs_endpoint" {
@@ -66,4 +95,9 @@ resource "aws_vpc_endpoint" "logs_endpoint" {
   subnet_ids          = [aws_subnet.private_1.id, aws_subnet.private_2.id]
   security_group_ids  = [aws_security_group.sg_endpoints.id]
   private_dns_enabled = true
+
+  tags = {
+    Name      = "URL-Shortener-Logs-Endpoint"
+    ManagedBy = "Terraform"
+  }
 }
