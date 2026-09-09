@@ -1,6 +1,6 @@
 # URL Shortener
 
-A production-grade URL shortening service built with FastAPI, containerized with Docker, deployed on AWS ECS Fargate with RDS PostgreSQL, served over HTTPS via a custom domain.
+A self-directed URL shortening service built with FastAPI, containerized with Docker, deployed on AWS ECS Fargate with RDS PostgreSQL, served over HTTPS via a custom domain.
 
 > Infrastructure has been destroyed to avoid ongoing costs. All code, documentation, and architecture diagrams are preserved in this repository.
 
@@ -20,7 +20,7 @@ A production-grade URL shortening service built with FastAPI, containerized with
 - Terraform — infrastructure as code
 - GitHub Actions + OIDC — CI/CD pipeline
 
-## Local Development (Sprint 1)
+## Local Development
 
 - FastAPI app with two endpoints: POST /shorten and GET /{code}
 - Dockerized with multi-stage Dockerfile
@@ -41,7 +41,7 @@ uvicorn main:app --reload
 
 API docs available at http://localhost:8000/docs
 
-## Infrastructure (Sprint 2)
+## Infrastructure
 
 Provisioned via Terraform:
 - VPC with public and private subnets across two availability zones
@@ -50,7 +50,7 @@ Provisioned via Terraform:
 - Secrets Manager storing database credentials as JSON
 - Security groups for ALB, ECS app, and RDS with least-privilege rules
 
-## Deployment (Sprint 3)
+## Deployment
 
 Provisioned via Terraform:
 - ECS Fargate cluster and service running the containerized FastAPI app
@@ -74,7 +74,7 @@ curl -X POST https://shrinkr.click/shorten \
 curl -L https://shrinkr.click/<short-code>
 ```
 
-## CI/CD Pipeline (Sprint 4)
+## CI/CD Pipeline
 
 Two GitHub Actions workflows:
 
@@ -90,7 +90,7 @@ Two GitHub Actions workflows:
 
 Authentication via OIDC — no static AWS credentials stored in GitHub secrets.
 
-## Frontend + Custom Domain (Sprint 5)
+## Frontend + Custom Domain
 
 ![shrinkr.click](diagram/shrinkr_website.png)
 

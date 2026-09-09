@@ -140,7 +140,7 @@ Why NAT Gateway rejected:
 - For a URL shortener specifically, payloads are tiny so NAT Gateway data transfer costs would be negligible — the cost argument actually favours NAT Gateway for this workload
 
 Why VPC endpoints chosen:
-- Portfolio goal: demonstrate production-correct private subnet isolation
+- Portfolio goal: demonstrate private subnet isolation
 - Traffic to ECR, Secrets Manager, CloudWatch, and S3 stays within the AWS network with no internet path
 - Architecturally correct for high data transfer workloads where endpoint costs are justified by traffic volume
 
@@ -169,7 +169,7 @@ Why OIDC chosen:
 - No credentials stored anywhere — GitHub requests a short-lived token per workflow run
 - Token expires when the job finishes, nothing to leak
 - Trust is scoped to a specific repo via the StringLike condition on the sub claim
-- Production-correct approach used across the industry
+- Standard industry pattern for GitHub Actions to AWS auth
 
 Trade-offs accepted:
 - Requires an IAM OIDC provider in AWS and a dedicated IAM role — more initial setup than pasting keys into GitHub secrets

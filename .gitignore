@@ -8,4 +8,4 @@ __pycache__/
 .terraform/
 terraform.tfvars
 *.backup
-.terraform.lock.hcl
+.terraform.lock.hcllearning.md
