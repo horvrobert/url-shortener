@@ -8,10 +8,12 @@ variable "project_name" {
 
 variable "db_username" {
   description = "Username for the RDS instance"
+  sensitive   = true
   type        = string
 }
 
 variable "db_password" {
   description = "Password for the RDS instance"
+  sensitive   = true
   type        = string
 }

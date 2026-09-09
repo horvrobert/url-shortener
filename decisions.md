@@ -99,7 +99,8 @@ Why Secrets Manager chosen:
 
 Trade-offs accepted:
 - Costs $0.40/month per secret plus $0.05 per 10,000 API calls — acceptable for proper credential management
-- Credentials passed via TF_VAR environment variables, never stored in terraform.tfvars
+- Credentials supplied as Terraform variables from a gitignored terraform.tfvars file, written to Secrets Manager on apply, and read by the application at runtime — never baked into the image or the task definition
+- Weak point: the tfvars file holds the password in plain text locally, and the secret value is written to Terraform state. RDS-managed master passwords (manage_master_user_password) avoid both and are the better pattern
 
 
 ## Decision: RDS in private subnet, no public accessibility
